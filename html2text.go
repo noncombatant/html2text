@@ -39,7 +39,44 @@ var (
 		"style":  true,
 		"title":  true,
 	}
+	openDisplayTags = map[string][]string{
+		"h1":   {SetColor(BgBlue, FgWhite, Bold), "# "},
+		"h2":   {SetColor(BgBlue, FgWhite, Bold), "## "},
+		"h3":   {SetColor(BgBlue, FgWhite, Bold), "### "},
+		"h4":   {SetColor(BgBlue, FgWhite, Bold), "#### "},
+		"h5":   {SetColor(BgBlue, FgWhite, Bold), "##### "},
+		"i":    {SetColor(Underline), "_"},
+		"cite": {SetColor(Underline), "_"},
+		"b":    {SetColor(Bold), "*"},
+		"em":   {SetColor(Bold), "*"},
+		"code": {SetColor(BgHiWhite, FgRed), "`"},
+		"tt":   {SetColor(BgHiWhite, FgRed), "`"},
+		"a":    {SetColor(Underline), "["},
+	}
+	closeDisplayTags = map[string]string{
+		"i":    "_",
+		"cite": "_",
+		"b":    "*",
+		"em":   "*",
+		"code": "`",
+		"tt":   "`",
+		"a":    "]",
+	}
 )
+
+func getOpenDisplayTag(element string) string {
+	if NoColor {
+		return openDisplayTags[element][1]
+	}
+	return openDisplayTags[element][0]
+}
+
+func getCloseDisplayTag(element string) string {
+	if NoColor {
+		return closeDisplayTags[element]
+	}
+	return UnsetColor()
+}
 
 func isElement(n *html.Node, tag string) bool {
 	return n.Type == html.ElementNode && n.Data == tag
@@ -97,15 +134,15 @@ func Render(w io.Writer, n, parent *html.Node) {
 			fmt.Fprint(w, "(image) ")
 		}
 	} else if isElement(n, "h1") {
-		fmt.Fprint(w, "# ")
+		fmt.Fprint(w, getOpenDisplayTag("h1"))
 	} else if isElement(n, "h2") {
-		fmt.Fprint(w, "## ")
+		fmt.Fprint(w, getOpenDisplayTag("h2"))
 	} else if isElement(n, "h3") {
-		fmt.Fprint(w, "### ")
+		fmt.Fprint(w, getOpenDisplayTag("h3"))
 	} else if isElement(n, "h4") {
-		fmt.Fprint(w, "#### ")
+		fmt.Fprint(w, getOpenDisplayTag("h4"))
 	} else if isElement(n, "h5") {
-		fmt.Fprint(w, "##### ")
+		fmt.Fprint(w, getOpenDisplayTag("h5"))
 	} else if isElement(n, "br") {
 		fmt.Fprintln(w)
 	} else if isElement(n, "hr") {
@@ -113,18 +150,23 @@ func Render(w io.Writer, n, parent *html.Node) {
 	} else if isElement(n, "figcaption") {
 		fmt.Fprint(w, "[")
 	} else if isElement(n, "i") || isElement(n, "cite") {
-		fmt.Fprint(w, "_")
+		fmt.Fprint(w, getOpenDisplayTag("i"))
 	} else if isElement(n, "b") || isElement(n, "em") {
-		fmt.Fprint(w, "*")
+		fmt.Fprint(w, getOpenDisplayTag("b"))
 	} else if isElement(n, "code") || isElement(n, "tt") {
-		fmt.Fprint(w, "`")
+		fmt.Fprint(w, getOpenDisplayTag("code"))
 	} else if isElement(n, "pre") {
 		fmt.Fprint(w, "```\n")
+	} else if isElement(n, "a") {
+		fmt.Fprint(w, getOpenDisplayTag("a"))
 	}
 
 	if n.Type == html.TextNode && parent.Type == html.ElementNode && parent.Data != "html" && parent.Data != "body" {
 		data := n.Data
-		if !hasParent(n, "pre") {
+		if hasParent(n, "pre") {
+			// TODO: Prefix every line
+			data = "    " + data
+		} else {
 			data = spaces.ReplaceAllString(data, " ")
 		}
 		fmt.Fprint(w, data)
@@ -137,21 +179,22 @@ func Render(w io.Writer, n, parent *html.Node) {
 	if isElement(n, "a") {
 		if href := getAttribute(n.Attr, "href"); href != "" {
 			if rel := getAttribute(n.Attr, "rel"); rel == "" {
-				fmt.Fprintf(w, " (%s)", href)
+				fmt.Fprintf(w, "%s (%s)", getCloseDisplayTag("a"), href)
 			}
 		}
 	} else if isElement(n, "figcaption") {
 		fmt.Fprint(w, "]")
 	} else if isElement(n, "i") || isElement(n, "cite") {
-		fmt.Fprint(w, "_")
+		fmt.Fprint(w, getCloseDisplayTag("i"))
 	} else if isElement(n, "b") || isElement(n, "em") {
-		fmt.Fprint(w, "*")
+		fmt.Fprint(w, getCloseDisplayTag("b"))
 	} else if isElement(n, "code") || isElement(n, "tt") {
-		fmt.Fprint(w, "`")
+		fmt.Fprint(w, getCloseDisplayTag("code"))
 	} else if isElement(n, "pre") {
 		fmt.Fprint(w, "\n```")
 	}
 	if isBlockDisplayElement(n) {
 		fmt.Fprint(w, "\n")
 	}
+	fmt.Fprint(w, UnsetColor())
 }
