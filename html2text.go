@@ -39,7 +39,7 @@ var (
 		"style":  true,
 		"title":  true,
 	}
-	openDisplayTags = map[string][]string{
+	openMarkers = map[string][]string{
 		"h1":   {SetColor(BgBlue, FgWhite, Bold), "# "},
 		"h2":   {SetColor(BgBlue, FgWhite, Bold), "## "},
 		"h3":   {SetColor(BgBlue, FgWhite, Bold), "### "},
@@ -53,7 +53,7 @@ var (
 		"tt":   {SetColor(BgHiWhite, FgRed), "`"},
 		"a":    {SetColor(Underline), "["},
 	}
-	closeDisplayTags = map[string]string{
+	closeMarkers = map[string]string{
 		"i":    "_",
 		"cite": "_",
 		"b":    "*",
@@ -64,16 +64,16 @@ var (
 	}
 )
 
-func getOpenDisplayTag(element string) string {
+func getOpenMarker(element string) string {
 	if NoColor {
-		return openDisplayTags[element][1]
+		return openMarkers[element][1]
 	}
-	return openDisplayTags[element][0]
+	return openMarkers[element][0]
 }
 
-func getCloseDisplayTag(element string) string {
+func getCloseMarker(element string) string {
 	if NoColor {
-		return closeDisplayTags[element]
+		return closeMarkers[element]
 	}
 	return UnsetColor()
 }
@@ -134,15 +134,15 @@ func Render(w io.Writer, n, parent *html.Node) {
 			fmt.Fprint(w, "(image) ")
 		}
 	} else if isElement(n, "h1") {
-		fmt.Fprint(w, getOpenDisplayTag("h1"))
+		fmt.Fprint(w, getOpenMarker("h1"))
 	} else if isElement(n, "h2") {
-		fmt.Fprint(w, getOpenDisplayTag("h2"))
+		fmt.Fprint(w, getOpenMarker("h2"))
 	} else if isElement(n, "h3") {
-		fmt.Fprint(w, getOpenDisplayTag("h3"))
+		fmt.Fprint(w, getOpenMarker("h3"))
 	} else if isElement(n, "h4") {
-		fmt.Fprint(w, getOpenDisplayTag("h4"))
+		fmt.Fprint(w, getOpenMarker("h4"))
 	} else if isElement(n, "h5") {
-		fmt.Fprint(w, getOpenDisplayTag("h5"))
+		fmt.Fprint(w, getOpenMarker("h5"))
 	} else if isElement(n, "br") {
 		fmt.Fprintln(w)
 	} else if isElement(n, "hr") {
@@ -150,15 +150,15 @@ func Render(w io.Writer, n, parent *html.Node) {
 	} else if isElement(n, "figcaption") {
 		fmt.Fprint(w, "[")
 	} else if isElement(n, "i") || isElement(n, "cite") {
-		fmt.Fprint(w, getOpenDisplayTag("i"))
+		fmt.Fprint(w, getOpenMarker("i"))
 	} else if isElement(n, "b") || isElement(n, "em") {
-		fmt.Fprint(w, getOpenDisplayTag("b"))
+		fmt.Fprint(w, getOpenMarker("b"))
 	} else if isElement(n, "code") || isElement(n, "tt") {
-		fmt.Fprint(w, getOpenDisplayTag("code"))
+		fmt.Fprint(w, getOpenMarker("code"))
 	} else if isElement(n, "pre") {
 		fmt.Fprint(w, "```\n")
 	} else if isElement(n, "a") {
-		fmt.Fprint(w, getOpenDisplayTag("a"))
+		fmt.Fprint(w, getOpenMarker("a"))
 	}
 
 	if n.Type == html.TextNode && parent.Type == html.ElementNode && parent.Data != "html" && parent.Data != "body" {
@@ -179,17 +179,17 @@ func Render(w io.Writer, n, parent *html.Node) {
 	if isElement(n, "a") {
 		if href := getAttribute(n.Attr, "href"); href != "" {
 			if rel := getAttribute(n.Attr, "rel"); rel == "" {
-				fmt.Fprintf(w, "%s (%s)", getCloseDisplayTag("a"), href)
+				fmt.Fprintf(w, "%s (%s)", getCloseMarker("a"), href)
 			}
 		}
 	} else if isElement(n, "figcaption") {
 		fmt.Fprint(w, "]")
 	} else if isElement(n, "i") || isElement(n, "cite") {
-		fmt.Fprint(w, getCloseDisplayTag("i"))
+		fmt.Fprint(w, getCloseMarker("i"))
 	} else if isElement(n, "b") || isElement(n, "em") {
-		fmt.Fprint(w, getCloseDisplayTag("b"))
+		fmt.Fprint(w, getCloseMarker("b"))
 	} else if isElement(n, "code") || isElement(n, "tt") {
-		fmt.Fprint(w, getCloseDisplayTag("code"))
+		fmt.Fprint(w, getCloseMarker("code"))
 	} else if isElement(n, "pre") {
 		fmt.Fprint(w, "\n```")
 	}
