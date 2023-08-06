@@ -8,6 +8,15 @@ output.
 Usage:
 
     html2text [pathname ...]
+
+html2text uses ANSI colors to distinguish some HTML tags. If you don’t want
+color, set the `NO_COLOR` environment variable to some non-empty value. For
+example, if you’re using a POSIX shell:
+
+    NO_COLOR=true html2text [pathname ...]
+
+When not using color, html2text displays some HTML tags with markup that looks
+not entirely unlike Markdown.
 */
 package main
 
