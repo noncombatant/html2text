@@ -28,7 +28,6 @@ var (
 		"hr":         true,
 		"p":          true,
 		"pre":        true,
-		//"figure":     true,
 		"figcaption": true,
 		"footer":     true,
 		"nav":        true,
@@ -62,18 +61,6 @@ func hasParent(node *html.Node, tag string) bool {
 	for p := node.Parent; p != nil; p = p.Parent {
 		if p.Type == html.ElementNode && p.Data == tag {
 			return true
-		}
-	}
-	return false
-}
-
-func hasAttribute(as []html.Attribute, key, value string) bool {
-	for _, a := range as {
-		if a.Key == key {
-			if value == "*" {
-				return a.Val != ""
-			}
-			return a.Val == value
 		}
 	}
 	return false
